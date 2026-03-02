@@ -75,14 +75,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     vault.commit_change(physics_params, text)
 
                     # 5. GenUI Manifestation (Publish)
-                    payload = {
-                        "jsonrpc": "2.0",
-                        "method": "ui:shader_intent",
-                        "params": {
-                            "arguments": physics_params
-                        }
-                    }
-                    await bus.publish("ui:shader_intent", payload, {"source": "brain"})
+                    await bus.publish("ui:shader_intent", physics_params, {"source": "brain"})
 
             except json.JSONDecodeError:
                 pass

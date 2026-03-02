@@ -2,7 +2,7 @@
 
 **Project Codename:** Vessel of Light (ภาชนะแห่งแสง)
 **Nature:** Digital Organism (สิ่งมีชีวิตดิจิทัล)
-**Philosophy:** Inspirafirma & The Sopan Protocol
+**Philosophy:** Inspira & Firma & The Sopan Protocol
 
 ---
 
@@ -17,7 +17,7 @@ AG-SC-ADK คือการก้าวข้าม User Interface แบบด
 *   **Vocal Interpretation:** การตีความเจตจำนงผ่านเสียงด้วยความแม่นยำสูง
 
 ### 🎨 The Body (Packages/Body) - "Firma"
-ส่วนแสดงผลและปฏิสัมพันธ์ (React Native/Skia) ทำหน้าที่เป็น **"กาย"** ที่ก่อร่างสร้างแสง:
+ส่วนแสดงผลและปฏิสัมพันธ์ (Vite + React + TypeScript บนเว็บ) ทำหน้าที่เป็น **"กาย"** ที่ก่อร่างสร้างแสง:
 *   **Neural Shaders:** การเรนเดอร์ UI สดๆ ผ่าน GLSL (SDF) แทนพิกเซลตายตัว
 *   **Ritual Handshake:** พิธีกรรมปลุกระบบด้วยการแตะ ๓ ครั้ง และ "วิถีสัจจะ" (Ritual of Truth) เพื่อยืนยันคำสั่ง
 
@@ -52,7 +52,7 @@ AG-SC-ADK คือการก้าวข้าม User Interface แบบด
 ## ๔. ข้อมูลจำเพาะทางเทคนิค (Technical Stack)
 
 *   **Language:** Python 3.11+ (Brain), TypeScript (Body)
-*   **Graphics Engine:** React Native Skia (GPU Accelerated Shader)
+*   **Frontend Runtime:** Vite + React + TypeScript (Web)
 *   **Communication:** AetherBus (WebSocket-based Pub/Sub mimicking MCP)
 *   **Immunity:** PRGX1 Sentry (Static & TinyML Hybrid filtering)
 *   **Vector Storage:** ChromaDB (Local Persistence)

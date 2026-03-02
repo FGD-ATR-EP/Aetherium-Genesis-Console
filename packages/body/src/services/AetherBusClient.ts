@@ -15,8 +15,11 @@ export class AetherBusClient {
             try {
                 const data = JSON.parse(event.data);
 
-                // Validate MCP & PhysicsParams
-                if (data.jsonrpc === "2.0" && data.method === "ui:shader_intent" && data.params) {
+                // Validate MCP & PhysicsParams (support both direct and tools/ prefixed methods)
+                const isShaderIntentMethod =
+                    data.method === "ui:shader_intent" || data.method === "tools/ui:shader_intent";
+
+                if (data.jsonrpc === "2.0" && isShaderIntentMethod && data.params) {
                     const physics = data.params.arguments as PhysicsParams;
                     if (this.messageHandler) {
                         this.messageHandler(physics);
