@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Canvas, Fill, Shader } from '@shopify/react-native-skia';
+import React, { useMemo } from 'react';
+import { Canvas, Fill, Shader, useClockValue } from '@shopify/react-native-skia';
 import { PhysicsParams } from '../types/intent';
 
 interface NeuralShaderInstanceProps {
@@ -38,7 +38,7 @@ float fbm(float3 p) {
 
 float4 main(float2 pos) {
     float2 uv = (pos - u_resolution * 0.5) / min(u_resolution.x, u_resolution.y);
-    float t = u_time;
+    float t = u_time / 1000.0; // Assume t is in ms
 
     // Vibe Intensity modulates speed and scale
     float speed = 1.0 + u_vibe_intensity * 2.0;
@@ -79,26 +79,13 @@ float4 main(float2 pos) {
 `;
 
 const NeuralShaderInstance: React.FC<NeuralShaderInstanceProps> = ({ physicsParams, skia }) => {
-  const [time, setTime] = useState(0);
-  const startTimeRef = useRef(Date.now());
-  const requestRef = useRef<number>();
+  // useClockValue handles the animation timer and triggers Skia redraws without React re-renders.
+  const time = useClockValue();
 
   const source = useMemo(() => {
     if (!skia || !skia.RuntimeEffect) return null;
     return skia.RuntimeEffect.Make(SHADER_CODE);
   }, [skia]);
-
-  const animate = () => {
-    setTime((Date.now() - startTimeRef.current) / 1000);
-    requestRef.current = requestAnimationFrame(animate);
-  };
-
-  useEffect(() => {
-    requestRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
-  }, []);
 
   const hexToFloat3 = (hex: string) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -122,13 +109,15 @@ const NeuralShaderInstance: React.FC<NeuralShaderInstanceProps> = ({ physicsPara
   if (pattern === "sharp_beams") rippleMode = 1.0;
   if (pattern === "chaotic_noise") rippleMode = 2.0;
 
-  const uniforms = {
+  // Using useMemo to construct the uniforms object ensures we only update the non-clock
+  // values when they change, while the u_time SkiaValue automatically drives the shader.
+  const uniforms = useMemo(() => ({
       u_time: time,
       u_resolution: [window.innerWidth, window.innerHeight],
       u_color_base: colorBase,
       u_vibe_intensity: intensity,
       u_ripple_mode: rippleMode
-  };
+  }), [time, colorBase, intensity, rippleMode]);
 
   if (!source) return null;
 

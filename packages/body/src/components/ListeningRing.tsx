@@ -1,5 +1,5 @@
-import React, { useMemo, useEffect, useRef, useState } from 'react';
-import { Canvas, Fill, Shader } from '@shopify/react-native-skia';
+import React, { useMemo } from 'react';
+import { Canvas, Fill, Shader, useClockValue } from '@shopify/react-native-skia';
 
 interface ListeningRingProps {
   skia: any;
@@ -19,6 +19,7 @@ float sdRing(float2 p, float r, float w) {
 
 float4 main(float2 pos) {
     float2 uv = (pos - u_resolution * 0.5) / min(u_resolution.x, u_resolution.y);
+    float t = u_time / 1000.0;
 
     // Ring shrinks as progress increases
     float initialRadius = 0.45;
@@ -29,7 +30,7 @@ float4 main(float2 pos) {
     float thickness = 0.005 + (u_volume * 0.02);
 
     // Jitter/Vibration based on volume
-    float jitter = sin(u_time * 50.0) * u_volume * 0.01;
+    float jitter = sin(t * 50.0) * u_volume * 0.01;
 
     float d = sdRing(uv, currentRadius + jitter, thickness);
 
@@ -47,35 +48,24 @@ float4 main(float2 pos) {
 `;
 
 const ListeningRing: React.FC<ListeningRingProps> = ({ skia, progress, volume }) => {
-  const [time, setTime] = useState(0);
-  const startTimeRef = useRef(Date.now());
-  const requestRef = useRef<number>();
+  // useClockValue handles the animation timer and triggers Skia redraws without React re-renders.
+  const time = useClockValue();
 
   const source = useMemo(() => {
     if (!skia || !skia.RuntimeEffect) return null;
     return skia.RuntimeEffect.Make(SHADER_CODE);
   }, [skia]);
 
-  const animate = () => {
-    setTime((Date.now() - startTimeRef.current) / 1000);
-    requestRef.current = requestAnimationFrame(animate);
-  };
-
-  useEffect(() => {
-    requestRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
-  }, []);
+  // Using useMemo to construct the uniforms object ensures we only update the non-clock
+  // values when they change, while the u_time SkiaValue automatically drives the shader.
+  const uniforms = useMemo(() => ({
+    u_time: time,
+    u_resolution: [window.innerWidth, window.innerHeight],
+    u_progress: progress,
+    u_volume: volume
+  }), [time, progress, volume]);
 
   if (!source) return null;
-
-  const uniforms = {
-      u_time: time,
-      u_resolution: [window.innerWidth, window.innerHeight],
-      u_progress: progress,
-      u_volume: volume
-  };
 
   return (
     // @ts-ignore
