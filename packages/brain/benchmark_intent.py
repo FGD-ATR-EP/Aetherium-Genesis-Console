@@ -13,9 +13,9 @@ sys.modules['chromadb'] = MagicMock()
 sys.modules['chromadb.config'] = MagicMock()
 
 class MockVault:
-    def store_gem(self, text, metadata):
-        # Simulate blocking I/O
-        time.sleep(0.1)
+    async def store_gem(self, text, metadata):
+        # Simulate non-blocking I/O
+        await asyncio.sleep(0.1)
 
 class MockBus:
     async def publish(self, topic, payload, identity):

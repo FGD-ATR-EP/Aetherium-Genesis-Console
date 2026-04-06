@@ -51,11 +51,8 @@ class IntentProcessor:
         """
         # In a real system, we'd query for semantic similarity first.
         # Here we just store it as a new gem for simulation.
-        # The blocking store_gem call uses chromadb.PersistentClient which does synchronous file/network operations.
-        # We wrap it in asyncio.to_thread to avoid blocking the async event loop.
-        await asyncio.to_thread(
-            self.vault.store_gem, text, {"source": "voice", "confidence": 1.0}
-        )
+        # The vault.store_gem call is now asynchronous and handles its own threading.
+        await self.vault.store_gem(text, {"source": "voice", "confidence": 1.0})
 
     async def _trigger_path_b(self, text):
         payload = {

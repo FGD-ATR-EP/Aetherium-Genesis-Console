@@ -19,6 +19,7 @@ DESCRIPTION: The mechanism of selective forgetting to maintain cognitive hygiene
 import logging
 from datetime import datetime, timedelta
 import chromadb
+import asyncio
 
 # Initialize Logger with a solemn tone
 logger = logging.getLogger("PRGX.Uposatha")
@@ -30,14 +31,14 @@ class UposathaCleaner:
         self.retention_days = 15
         self.min_usage_threshold = 3
 
-    def cleanse_entropy(self) -> dict:
+    async def cleanse_entropy(self) -> dict:
         """
         Performs the ritual of purification.
         Removes 'Phantom Memories' that have not resonated with the user's intent.
         """
         logger.info("🕯️ Initiating Uposatha Ritual: Scanning for decaying echoes...")
 
-        if self.collection.count() == 0:
+        if await asyncio.to_thread(self.collection.count) == 0:
             logger.info("The Vault is empty. No burdens to release.")
             return {"status": "clean", "deleted_count": 0}
 
@@ -46,7 +47,8 @@ class UposathaCleaner:
 
         # 1. Fetch only gems that meet the criteria for release
         # Optimized: Server-side filtering replaces full collection scan
-        decaying_gems = self.collection.get(
+        decaying_gems = await asyncio.to_thread(
+            self.collection.get,
             where={
                 "$and": [
                     {"last_synced": {"$lt": threshold_date}},
@@ -77,7 +79,7 @@ class UposathaCleaner:
                 )
 
             count = len(ids_to_release)
-            self.collection.delete(ids=ids_to_release)
+            await asyncio.to_thread(self.collection.delete, ids=ids_to_release)
             logger.info(
                 f"✨ Uposatha Complete: Released {count} phantom echoes back to the void."
             )

@@ -5,6 +5,7 @@ import os
 import time
 import hashlib
 from datetime import datetime
+import asyncio
 
 logger = logging.getLogger("PRGX.Vault")
 
@@ -36,7 +37,7 @@ class Vault:
             seed = hashlib.sha256(seed).digest()
         return vector[:dimensions]
 
-    def store_gem(self, text, metadata):
+    async def store_gem(self, text, metadata):
         """
         Store a realized intent as a 'Gem'.
         """
@@ -46,7 +47,8 @@ class Vault:
         metadata.setdefault("usage_count", 1)
         metadata.setdefault("last_synced", datetime.now().isoformat())
 
-        self.gems.upsert(
+        await asyncio.to_thread(
+            self.gems.upsert,
             documents=[text],
             metadatas=[metadata],
             embeddings=[self._embed_text(text)],
@@ -54,18 +56,23 @@ class Vault:
         )
         logger.info(f"💎 Stored Gem: {text[:20]}... (ID: {gem_id})")
 
-    def update_resonance(self, gem_id):
+    async def update_resonance(self, gem_id):
         """
         Increment usage count (Resonance) for a gem.
         """
         try:
-            existing = self.gems.get(ids=[gem_id], include=["metadatas"])
+            existing = await asyncio.to_thread(
+                self.gems.get,
+                ids=[gem_id],
+                include=["metadatas"]
+            )
             if existing and existing['metadatas']:
                 meta = existing['metadatas'][0]
                 meta['usage_count'] = meta.get('usage_count', 0) + 1
                 meta['last_synced'] = datetime.now().isoformat()
 
-                self.gems.update(
+                await asyncio.to_thread(
+                    self.gems.update,
                     ids=[gem_id],
                     metadatas=[meta]
                 )

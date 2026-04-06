@@ -72,7 +72,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     physics_params = prgx.alchemist.transmute(current_vibe, intent_vector)
 
                     # 4. Akashic Record Commit
-                    vault.commit_change(physics_params, text)
+                    await vault.commit_change(physics_params, text)
 
                     # 5. GenUI Manifestation (Publish)
                     await bus.publish("ui:shader_intent", physics_params, {"source": "brain"})
