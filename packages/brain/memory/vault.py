@@ -1,7 +1,5 @@
 import chromadb
-from chromadb.config import Settings
 import logging
-import os
 import time
 import hashlib
 from datetime import datetime
@@ -25,7 +23,9 @@ class Vault:
         # Initialize Collections
         self.gems = self.client.get_or_create_collection("vocal_resonance_gems")
 
-    def _embed_text(self, text, dimensions=384):
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def _embed_text(text, dimensions=384):
         """
         Build a small deterministic embedding locally.
         This avoids online model downloads in constrained environments.
@@ -51,7 +51,7 @@ class Vault:
             self.gems.upsert,
             documents=[text],
             metadatas=[metadata],
-            embeddings=[self._embed_text(text)],
+            embeddings=[Vault._embed_text(text)],
             ids=[gem_id]
         )
         logger.info(f"💎 Stored Gem: {text[:20]}... (ID: {gem_id})")
