@@ -13,7 +13,7 @@ class AkashicVault(Vault):
     def __init__(self, persist_path="akashic_record"):
         super().__init__(persist_path)
 
-    def commit_change(self, physics_params, original_text, ritual_tag="normal"):
+    async def commit_change(self, physics_params, original_text, ritual_tag="normal"):
         """
         Commit a significant change/intent to the Record.
         """
@@ -31,7 +31,7 @@ class AkashicVault(Vault):
 
         # Store vector (using the intent vector from params if possible, or text embedding)
         # Here we store text for simplicity of retrieval in this prototype
-        self.store_gem(original_text, metadata)
+        await self.store_gem(original_text, metadata)
 
         logger.info(f"📜 Akashic Record Committed: {gem_id} [{ritual_tag}]")
         return gem_id
