@@ -64,19 +64,20 @@ class UposathaCleaner:
         # 2. The Act of Release (Letting Go)
         if ids_to_release:
             # Optional: Log the Judgment for debugging
-            for i, gem_id in enumerate(ids_to_release):
-                meta = metadatas[i]
-                usage_count = meta.get("usage_count", 0)
-                try:
-                    last_synced = datetime.fromisoformat(
-                        meta.get("last_synced", threshold_date)
+            if logger.isEnabledFor(logging.DEBUG):
+                for i, gem_id in enumerate(ids_to_release):
+                    meta = metadatas[i]
+                    usage_count = meta.get("usage_count", 0)
+                    try:
+                        last_synced = datetime.fromisoformat(
+                            meta.get("last_synced", threshold_date)
+                        )
+                        age_days = (now - last_synced).days
+                    except ValueError:
+                        age_days = "unknown"
+                    logger.debug(
+                        f"🍂 Marking gem {gem_id} for release (Age: {age_days}d, Usage: {usage_count})"
                     )
-                    age_days = (now - last_synced).days
-                except ValueError:
-                    age_days = "unknown"
-                logger.debug(
-                    f"🍂 Marking gem {gem_id} for release (Age: {age_days}d, Usage: {usage_count})"
-                )
 
             count = len(ids_to_release)
             await asyncio.to_thread(self.collection.delete, ids=ids_to_release)
