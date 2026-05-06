@@ -17,12 +17,13 @@ class MockBioDriver:
     async def start_loop(self):
         self.running = True
         print("BioDriver Loop Started")
+        identity_header = self.identity.get_identity_header()
         while self.running:
             vitals = self._generate_vitals()
             payload = self._construct_payload(vitals)
 
             # Publish to AetherBus
-            await self.bus.publish("render_light", payload, self.identity.get_identity_header())
+            await self.bus.publish("render_light", payload, identity_header)
 
             # 10Hz update
             await asyncio.sleep(0.1)
